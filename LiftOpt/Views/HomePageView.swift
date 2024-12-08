@@ -111,8 +111,10 @@ func achievementView() -> some View {
 struct HomePageView: View {
     @StateObject private var viewModel = ProgressViewModel()
     @State private var isAddingNewItem = false
+  
 
     var body: some View {
+
         ScrollView {
             VStack(spacing: 16) {
                 HStack {
