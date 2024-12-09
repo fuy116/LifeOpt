@@ -1,11 +1,5 @@
 import SwiftUI
 
-struct OverviewItem {
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-}
 
 
 func overviewCard(item: OverviewItem) -> some View {
@@ -30,7 +24,7 @@ func overviewCard(item: OverviewItem) -> some View {
     .cornerRadius(10)
 }
 
-func progressCard(item: ProgressItem) -> some View {
+func progressCard(item: Goal) -> some View {
     VStack(alignment: .leading, spacing: 8) {
         Text(item.title)
             .font(.subheadline)
@@ -65,9 +59,7 @@ func todayOverview() -> some View {
             } label: {
                 Image(systemName: "calendar")
                 
-            }
-        
-                
+            }           
         }
         
         HStack(spacing: 12) {
@@ -83,7 +75,7 @@ func todayOverview() -> some View {
 func weeklyView() -> some View {
     VStack(alignment: .leading, spacing: 16) {
         HStack {
-            Text("本週進度")
+            Text("本日任務")
                 .font(.headline)
             Spacer()
    
@@ -108,52 +100,59 @@ func achievementView() -> some View {
     .background(Color.white)
     .cornerRadius(10)
 }
+
+
 struct HomePageView: View {
-    @StateObject private var viewModel = ProgressViewModel()
+    @StateObject private var viewModel = GoalVM()
     @State private var isAddingNewItem = false
   
 
     var body: some View {
-
-        ScrollView {
-            VStack(spacing: 16) {
-                HStack {
-                    Text("您好，User")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Spacer()
-                    Circle()
-                        .fill(Color.gray)
-                        .frame(width: 40, height: 40)
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 16) {
+                    HStack {
+                        Text("您好，User")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        Spacer()
+                        Circle()
+                            .fill(Color.gray)
+                            .frame(width: 40, height: 40)
+                    }
+                    todayOverview()
+                    progressView(viewModel: viewModel)
+                    weeklyView()
+                    achievementView()
                 }
-                todayOverview()
-                progressView(viewModel: viewModel, isAddingNewItem: $isAddingNewItem)
-                weeklyView()
-                achievementView()
+                .padding()
             }
-            .padding()
-        }
-        .background(Color(UIColor.systemGray6))
-        .sheet(isPresented: $isAddingNewItem) {
-            AddProgressItemView(viewModel: viewModel)
+            .background(Color(UIColor.systemGray6))
+//            .sheet(isPresented: $isAddingNewItem) {
+//                AddProgressItemView(viewModel: viewModel)
+//            }
         }
     }
 
-    private func progressView(viewModel: ProgressViewModel, isAddingNewItem: Binding<Bool>) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
+    private func progressView(viewModel: GoalVM) -> some View {
+   
+        return VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("進度概覽")
                     .font(.headline)
                 Spacer()
-                Button {
-                    isAddingNewItem.wrappedValue = true
-                } label: {
-                    Image(systemName: "plus.app")
-                }
+                NavigationLink(destination: AddGoalView(viewModel: viewModel)) {
+                               Image(systemName: "plus.app")
+               }
+//                Button {
+//                    isAddingNewItem.wrappedValue = true
+//                } label: {
+//                    Image(systemName: "wrench.adjustable") // for test
+//                }
             }
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(viewModel.progressItems) { item in
+                ForEach(viewModel.Goalblock) { item in
                     progressCard(item: item)
                 }
             }

@@ -35,12 +35,11 @@ struct ContentView: View {
                     .tabItem{
                         Image(systemName: "gear")
                         Text("設定")
-                    }
+                    }                                               
                     .tag(3)
             }
+            
         }
-        
-       
     }
 }
 
