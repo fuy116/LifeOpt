@@ -86,20 +86,20 @@ func weeklyView() -> some View {
     .background(Color.white)
     .cornerRadius(10)
 }
-func achievementView() -> some View {
-    VStack(alignment: .leading, spacing: 16) {
-        HStack {
-            Text("最近成就")
-                .font(.headline)
-            Spacer()
-   
-        }
-        
-    }
-    .padding()
-    .background(Color.white)
-    .cornerRadius(10)
-}
+//func achievementView() -> some View {
+//    VStack(alignment: .leading, spacing: 16) {
+//        HStack {
+//            Text("最近成就")
+//                .font(.headline)
+//            Spacer()
+//   
+//        }
+//        
+//    }
+//    .padding()
+//    .background(Color.white)
+//    .cornerRadius(10)
+//}
 
 
 struct HomePageView: View {
@@ -123,7 +123,7 @@ struct HomePageView: View {
                     todayOverview()
                     progressView(viewModel: viewModel)
                     weeklyView()
-                    achievementView()
+                    //achievementView()
                 }
                 .padding()
             }
