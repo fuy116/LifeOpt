@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AddGoalView: View {
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) var dismiss //跳出視窗用的
     @ObservedObject var viewModel: GoalVM
     @State private var goalName: String = ""
     @State private var goalContent: String = ""

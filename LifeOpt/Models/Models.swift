@@ -43,3 +43,11 @@ struct SubGoal {
     var name: String
     var isEditing: Bool = false
 }
+
+struct Task{
+    var name: String
+    var isFinish: Bool = false
+    var startDate: Date?
+    var dueDate: Date?
+    
+}
