@@ -1,7 +1,5 @@
 import SwiftUI
 
-
-
 func overviewCard(item: OverviewItem) -> some View {
     HStack(spacing: 12) {
         Image(systemName: item.icon)
@@ -20,30 +18,7 @@ func overviewCard(item: OverviewItem) -> some View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding()
-    .background(Color(UIColor.systemGray6)) // 使用淺灰色背景
-    .cornerRadius(10)
-}
-
-func progressCard(item: Goal) -> some View {
-    VStack(alignment: .leading, spacing: 8) {
-        Text(item.title)
-            .font(.subheadline)
-            .fontWeight(.medium)
-        
-        HStack {
-            Text("\(Int(item.progress * 100))%")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(item.color)
-            
-            Spacer()
-        }
-        
-        ProgressView(value: item.progress)
-            .progressViewStyle(LinearProgressViewStyle(tint: item.color))
-    }
-    .padding()
-    .background(item.color.opacity(0.1))
+    .background(Color(UIColor.systemGray6))
     .cornerRadius(10)
 }
 
@@ -58,8 +33,7 @@ func todayOverview() -> some View {
                 print("open calender")
             } label: {
                 Image(systemName: "calendar")
-                
-            }           
+            }
         }
         
         HStack(spacing: 12) {
@@ -78,34 +52,16 @@ func weeklyView() -> some View {
             Text("本日任務")
                 .font(.headline)
             Spacer()
-   
         }
-        
     }
     .padding()
     .background(Color.white)
     .cornerRadius(10)
 }
-//func achievementView() -> some View {
-//    VStack(alignment: .leading, spacing: 16) {
-//        HStack {
-//            Text("最近成就")
-//                .font(.headline)
-//            Spacer()
-//   
-//        }
-//        
-//    }
-//    .padding()
-//    .background(Color.white)
-//    .cornerRadius(10)
-//}
-
 
 struct HomePageView: View {
     @StateObject private var viewModel = GoalVM()
     @State private var isAddingNewItem = false
-  
 
     var body: some View {
         NavigationView {
@@ -121,45 +77,79 @@ struct HomePageView: View {
                             .frame(width: 40, height: 40)
                     }
                     todayOverview()
-                    progressView(viewModel: viewModel)
+                    progressView()
                     weeklyView()
-                    //achievementView()
                 }
                 .padding()
             }
             .background(Color(UIColor.systemGray6))
-//            .sheet(isPresented: $isAddingNewItem) {
-//                AddProgressItemView(viewModel: viewModel)
-//            }
+        }
+    }
+    
+    private func progressCard(item: Target) -> some View {
+        NavigationLink(destination: TargetDetailView(viewModel: viewModel, target: item)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(item.name)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                
+                HStack {
+                    Text("\(Int(item.totalProgress ))%")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: item.color))
+                    
+                    Spacer()
+                }
+                
+                ProgressView(value: item.totalProgress, total: 100)  
+                    .progressViewStyle(LinearProgressViewStyle(tint: Color(hex: item.color)))
+            }
+            .padding()
+            .background(Color(hex: item.color).opacity(0.1))
+            .cornerRadius(10)
         }
     }
 
-    private func progressView(viewModel: GoalVM) -> some View {
-   
-        return VStack(alignment: .leading, spacing: 16) {
+    private func progressView() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("進度概覽")
                     .font(.headline)
                 Spacer()
-                NavigationLink(destination: AddGoalView(viewModel: viewModel)) {
-                               Image(systemName: "plus.app")
-               }
-//                Button {
-//                    isAddingNewItem.wrappedValue = true
-//                } label: {
-//                    Image(systemName: "wrench.adjustable") // for test
-//                }
+                NavigationLink(destination: AddTargetView(viewModel: viewModel)) {
+                    Image(systemName: "plus.app")
+                }
             }
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(viewModel.Goalblock) { item in
-                    progressCard(item: item)
+                ForEach(viewModel.targets) { target in
+                    progressCard(item: target)
                 }
             }
         }
         .padding()
         .background(Color.white)
         .cornerRadius(10)
+    }
+}
+
+// 顏色處理擴展
+extension Color {
+    init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+        var rgb: UInt64 = 0
+
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let r = Double((rgb & 0xFF0000) >> 16) / 255.0
+        let g = Double((rgb & 0x00FF00) >> 8) / 255.0
+        let b = Double(rgb & 0x0000FF) / 255.0
+
+        self.init(red: r, green: g, blue: b)
     }
 }
 

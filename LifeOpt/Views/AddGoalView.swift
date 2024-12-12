@@ -1,23 +1,25 @@
 import SwiftUI
 
-struct AddGoalView: View {
-    @Environment(\.dismiss) var dismiss //跳出視窗用的
+struct AddTargetView: View {
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: GoalVM
-    @State private var goalName: String = ""
-    @State private var goalContent: String = ""
+    @State private var targetName: String = ""
+    @State private var targetDescription: String = ""
     @State private var startDate = Date()
     @State private var endDate = Date()
     @State private var subGoalName: String = ""
     @State private var subGoals: [SubGoal] = []
     @State private var color: Color = .blue
+    @State private var selectedWeight: Int = 1
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                // 目標名稱
                 VStack(alignment: .leading, spacing: 16) {
                     Text("目標名稱")
                         .font(.headline)
-                    TextField("", text: $goalName)
+                    TextField("", text: $targetName)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color(UIColor.systemGray6))
@@ -27,10 +29,11 @@ struct AddGoalView: View {
                 .background(Color.white)
                 .cornerRadius(16)
                 
+                // 目標內容
                 VStack(alignment: .leading, spacing: 16) {
                     Text("目標內容")
                         .font(.headline)
-                    TextField("寫下你想達成的目標吧！", text: $goalContent)
+                    TextField("寫下你想達成的目標吧！", text: $targetDescription)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color(UIColor.systemGray6))
@@ -40,6 +43,7 @@ struct AddGoalView: View {
                 .background(Color.white)
                 .cornerRadius(16)
                 
+                // 日期和顏色選擇
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("開始日期")
@@ -58,8 +62,9 @@ struct AddGoalView: View {
                             .labelsHidden()
                             .environment(\.locale, Locale(identifier: "zh_TW"))
                     }
-                    HStack{
-                        Text("選擇任務顏色")
+                    
+                    HStack {
+                        Text("選擇目標顏色")
                             .font(.headline)
                         ColorPicker("", selection: $color)
                     }
@@ -68,6 +73,7 @@ struct AddGoalView: View {
                 .background(Color.white)
                 .cornerRadius(16)
                 
+                // 子目標
                 VStack(alignment: .leading, spacing: 16) {
                     Text("子目標")
                         .font(.headline)
@@ -81,7 +87,14 @@ struct AddGoalView: View {
                         
                         Button(action: {
                             if !subGoalName.isEmpty {
-                                subGoals.append(SubGoal(name: subGoalName))
+                                // 創建新的子目標，targetId 會在保存主目標時設置
+                                let subGoal = SubGoal(
+                                    name: subGoalName,
+                                    weight: selectedWeight,
+                                    tasks: [],
+                                    targetId: UUID() // 臨時 ID，會在保存時更新
+                                )
+                                subGoals.append(subGoal)
                                 subGoalName = ""
                             }
                         }) {
@@ -99,27 +112,36 @@ struct AddGoalView: View {
                                     Text(subGoals[index].name)
                                     Spacer()
                                     
+                                    // 權重選擇器
+                                    Picker("權重", selection: Binding(
+                                        get: { subGoals[index].weight },
+                                        set: { newWeight in
+                                            subGoals[index] = SubGoal(
+                                                id: subGoals[index].id,
+                                                name: subGoals[index].name,
+                                                weight: newWeight,
+                                                tasks: subGoals[index].tasks,
+                                                targetId: subGoals[index].targetId
+                                            )
+                                        }
+                                    )) {
+                                        ForEach(1...5, id: \.self) { weight in
+                                            HStack {
+                                                ForEach(0..<weight, id: \.self) { _ in
+                                                    Image(systemName: "star.fill")
+                                                }
+                                            }.tag(weight)
+                                        }
+                                    }
+                                    .frame(width: 120)
+                                    
+                                    // 刪除按鈕
                                     Button(action: {
-                                        subGoals[index].isEditing.toggle()
+                                        subGoals.remove(at: index)
                                     }) {
-                                        Image(systemName: "pencil.circle.fill")
-                                            .foregroundColor(.gray)
+                                        Image(systemName: "trash.circle.fill")
+                                            .foregroundColor(.red)
                                     }
-                                    Button(action: {
-                                        print("編輯weight")
-                                    }) {
-                                        Image(systemName: "star.circle.fill")
-                                            .foregroundColor(.gray)
-                                    }
-                                    Picker(selection: /*@START_MENU_TOKEN@*/.constant(1)/*@END_MENU_TOKEN@*/, label: Text("Picker")) {
-                                        Image(systemName: "star.fill").tag(1)
-                                        
-                                        HStack{
-                                            Image(systemName: "star.fill")
-                                            Image(systemName: "star.fill")
-                                        }.tag(2)
-                                    }
-
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
@@ -135,9 +157,9 @@ struct AddGoalView: View {
                 
                 Spacer()
                 
+                // 建立目標按鈕
                 Button(action: {
-                    addGoal()
-                    print("新增目標：\(goalName), 子目標：\(subGoals)")
+                    addTarget()
                 }) {
                     Text("建立目標")
                         .frame(maxWidth: .infinity)
@@ -152,11 +174,32 @@ struct AddGoalView: View {
         .navigationTitle("新增目標")
         .background(Color(UIColor.systemGray6))
     }
-    private func addGoal(){
-        let newGoal = Goal(title: goalName, description: goalContent, progress: 0.66, color: color, startDate: startDate, dueDate: endDate)
-        viewModel.addGoal(newGoal)
+    
+    private func addTarget() {
+        let hexColor = color.toHex() ?? "#007AFF" // 需要實現 Color 擴展方法
+        let newTarget = Target(
+            name: targetName,
+            description: targetDescription,
+            startDate: startDate,
+            endDate: endDate,
+            subGoals: subGoals,
+            color: hexColor
+        )
+        viewModel.addTarget(newTarget)
         dismiss()
     }
 }
 
-
+// Color 擴展，用於轉換顏色為十六進制字串
+extension Color {
+    func toHex() -> String? {
+        guard let components = UIColor(self).cgColor.components else { return nil }
+        let r = Float(components[0])
+        let g = Float(components[1])
+        let b = Float(components[2])
+        return String(format: "#%02lX%02lX%02lX",
+                     lroundf(r * 255),
+                     lroundf(g * 255),
+                     lroundf(b * 255))
+    }
+}
