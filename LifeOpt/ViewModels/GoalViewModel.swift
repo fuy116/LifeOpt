@@ -1,11 +1,3 @@
-//
-//  GoalVM.swift
-//  LiftOpt
-//
-//  Created by Sean Fu on 2024/12/9.
-//
-
- 
 import SwiftUI
 import Combine
 

@@ -7,6 +7,7 @@
 
 // Models.swift'
 import SwiftUI
+import Foundation
 struct OverviewItem: Identifiable {
     let id = UUID()
     let icon: String
@@ -29,9 +30,6 @@ struct AchievementItem: Identifiable {
     let subtitle: String
 }
 
-import Foundation
-
-// MARK: - 主目標模型
 struct Target: Identifiable, Codable {
     let id: UUID
     var name: String
@@ -39,12 +37,14 @@ struct Target: Identifiable, Codable {
     var startDate: Date
     var endDate: Date
     var subGoals: [SubGoal]
-    var color: String // 使用hex string存储颜色
+    var color: String // 用hex 存
     
-    // 計算總進度
+ 
     var totalProgress: Double {
-          guard !subGoals.isEmpty else { return 0 }
-          
+
+        if subGoals.isEmpty {
+                return 0
+            }
           let totalWeight = subGoals.reduce(0) { $0 + $1.weight }
           let weightedProgress = subGoals.reduce(0.0) { sum, subgoal in
               // 每個子目標的權重佔比
@@ -52,14 +52,15 @@ struct Target: Identifiable, Codable {
               return sum + (subgoal.progress * weightRatio * 100)
           }
           
-          return weightedProgress / 100 // 轉換為0-1的範圍
+          return weightedProgress / 100
+        
       }
     
     init(id: UUID = UUID(),
          name: String,
          description: String = "",
          startDate: Date = Date(),
-         endDate: Date = Date().addingTimeInterval(30*24*60*60),
+         endDate: Date = Date().addingTimeInterval(7*24*60*60),
          subGoals: [SubGoal] = [],
          color: String = "#007AFF") {
         self.id = id
@@ -73,15 +74,16 @@ struct Target: Identifiable, Codable {
     
 }
 
-// MARK: - 子目標模型
+
+
 struct SubGoal: Identifiable, Codable {
     let id: UUID
     var name: String
-    var weight: Int // 權重 1-10
+    var weight: Int // 權重 1-10 每個星星佔2
     var tasks: [Task]
     var targetId: UUID // 關聯到主目標
     
-    // 計算完成度
+
     var progress: Double {
         guard !tasks.isEmpty else { return 0 }
         
@@ -92,7 +94,7 @@ struct SubGoal: Identifiable, Codable {
             return sum + (task.progressPercentage * weightRatio * 100)
         }
         
-        return weightedProgress / 100 // 轉換為0-1的範圍
+        return weightedProgress / 100
     }
     
     init(id: UUID = UUID(),
@@ -137,7 +139,7 @@ struct Task: Identifiable, Codable {
          name: String,
          description: String = "",
          startDate: Date = Date(),
-         endDate: Date = Date().addingTimeInterval(24*60*60),
+         endDate: Date = Date().addingTimeInterval(7*24*60*60),
          taskType: TaskType = .daily,
          progressType: ProgressType = .percentage,
          currentValue: Double = 0,
@@ -158,7 +160,7 @@ struct Task: Identifiable, Codable {
     }
 }
 
-// MARK: - 輔助枚舉
+
 enum TaskType: String, Codable {
     case daily = "daily"
     case weekly = "weekly"
@@ -167,6 +169,6 @@ enum TaskType: String, Codable {
 }
 
 enum ProgressType: String, Codable {
-    case percentage // 百分比進度
+    case percentage
     case value     // 數值進度
 }

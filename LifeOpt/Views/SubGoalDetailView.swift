@@ -6,9 +6,7 @@ struct SubGoalDetailView: View {
     let targetColor: String
     @State private var showingAddTask = false
     @State private var showingEditTask: Task?
-    
-    // 移除多餘的 init 宣告，使用預設的 memberwise initializer
-    
+        
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -45,8 +43,7 @@ struct SubGoalDetailView: View {
                 .padding()
                 .background(Color.white)
                 .cornerRadius(10)
-                
-                // 任務列表
+  
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("任務列表")

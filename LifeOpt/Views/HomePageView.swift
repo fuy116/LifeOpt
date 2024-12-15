@@ -69,12 +69,13 @@ struct HomePageView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Text("您好，User")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
+                               .font(.largeTitle)
+                               .fontWeight(.bold)
                         Spacer()
-                        Circle()
-                            .fill(Color.gray)
-                            .frame(width: 40, height: 40)
+                        //使用者頭像可以放這
+                        // Circle()
+                          //  .fill(Color.gray)
+                            //.frame(width: 40, height: 40)
                     }
                     todayOverview()
                     progressView()
@@ -135,7 +136,7 @@ struct HomePageView: View {
     }
 }
 
-// 顏色處理擴展
+// 用色碼表示顏色
 extension Color {
     init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
