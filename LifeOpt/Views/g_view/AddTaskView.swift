@@ -46,6 +46,23 @@ struct AddTaskView: View {
                     .background(Color.white)
                     .cornerRadius(16)
                     
+                    // 權重設置
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("目標權重")
+                            .font(.headline)
+                        HStack {
+                            ForEach(1...5, id: \.self) { index in
+                                Image(systemName: index <= weight ? "star.fill" : "star")
+                                    .foregroundColor(index <= weight ? .yellow : .gray)
+                                    .onTapGesture {
+                                        weight = index
+                                    }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(16)
                     // 日期設置
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
@@ -134,6 +151,6 @@ struct AddTaskView: View {
             subGoalId: subGoalId
         )
         onSave(newTask)
-        dismiss()
+        //dismiss()
     }
 }

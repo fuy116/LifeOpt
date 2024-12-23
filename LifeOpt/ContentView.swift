@@ -31,12 +31,12 @@ struct ContentView: View {
                         Text("每日反思")
                     }
                     .tag(2)
-                SettingView()
-                    .tabItem{
-                        Image(systemName: "gear")
-                        Text("設定")
-                    }                                               
-                    .tag(3)
+//                SettingView()
+//                    .tabItem{
+//                        Image(systemName: "gear")
+//                        Text("設定")
+//                    }                                               
+//                    .tag(3)
             }
             
         }

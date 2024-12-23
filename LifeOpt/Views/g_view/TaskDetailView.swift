@@ -191,6 +191,25 @@ struct EditTaskView: View {
             .first(where: { $0.subGoals.contains(where: { $0.id == subGoalId }) }) {
             viewModel.updateTask(updatedTask, in: subGoal, in: target)
         }
-        dismiss()
+        //dismiss()
     }
+}
+#Preview {
+    let mockTask = Task(
+        name: "完成進度條功能",
+        description: "測試任務描述",
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())!,
+        taskType: .daily,
+        progressType: .value,
+        currentValue: 30,
+        targetValue: 100,
+        weight: 5,
+        subGoalId: UUID()
+    )
+    
+    let mockViewModel = GoalVM() // 確保 GoalVM 有無參數初始化方法
+    let mockSubGoalId = UUID()
+    
+    TaskDetailView(viewModel: mockViewModel, task: mockTask, subGoalId: mockSubGoalId)
 }
