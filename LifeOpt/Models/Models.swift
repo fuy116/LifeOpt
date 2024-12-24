@@ -125,15 +125,24 @@ struct Task: Identifiable, Codable {
     var weight: Int // 權重 1-10
     var subGoalId: UUID // 關聯到子目標
     
-    // 計算進度百分比
-    var progressPercentage: Double {
-        switch progressType {
-        case .percentage:
-            return currentValue
-        case .value:
-            return (currentValue / targetValue) * 100
+    var totalDays: Int {
+            let calendar = Calendar.current
+            return calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0 + 1
         }
-    }
+        
+        // 修改進度計算方式
+        var progressPercentage: Double {
+            switch (progressType, taskType) {
+            case (.percentage, .daily):
+                // 每日任務的進度計算
+                let dailyProgress = 100.0 / Double(totalDays)
+                return currentValue * dailyProgress
+            case (.percentage, _):
+                return currentValue
+            case (.value, _):
+                return (currentValue / targetValue) * 100
+            }
+        }
     
     init(id: UUID = UUID(),
          name: String,

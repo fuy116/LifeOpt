@@ -148,4 +148,25 @@ class GoalVM: ObservableObject {
                task.weight <= 10 &&
                task.targetValue > 0
     }
+    
+    func updateTaskProgress(_ task: Task, isCompleted: Bool) {
+        for (targetIndex, target) in targets.enumerated() {
+            for (subGoalIndex, subGoal) in target.subGoals.enumerated() {
+                if let taskIndex = subGoal.tasks.firstIndex(where: { $0.id == task.id }) {
+                    var updatedTask = task
+                    updatedTask.currentValue = isCompleted ? updatedTask.targetValue : 0
+                    
+                    var updatedSubGoal = subGoal
+                    updatedSubGoal.tasks[taskIndex] = updatedTask
+                    
+                    var updatedTarget = target
+                    updatedTarget.subGoals[subGoalIndex] = updatedSubGoal
+                    
+                    targets[targetIndex] = updatedTarget
+                    saveData()
+                    return
+                }
+            }
+        }
+    }
 }

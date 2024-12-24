@@ -15,28 +15,37 @@ struct ContentView: View {
                 HomePageView()
                     .tabItem {
                         Image(systemName: "house.fill")
-                        Text("首頁")
+                        Text("概覽")
                     }
                     .tag(0)
                 TimeTrackerView()
                     .tabItem{
-                        Image(systemName: "timer")
+                        Image(systemName: "chart.bar")
                         Text("時間追蹤")
                     }
                     .tag(1)
+                
+                TimerView()
+                    .tabItem{
+                        Image(systemName:"timer")
+                        Text("計時器")
+                    }
+                    .tag(2)
 
                 DailyReviewView()
                     .tabItem{
                         Image(systemName: "square.and.pencil")
                         Text("每日反思")
-                    }
-                    .tag(2)
-//                SettingView()
-//                    .tabItem{
-//                        Image(systemName: "gear")
-//                        Text("設定")
-//                    }                                               
-//                    .tag(3)
+                    }.tag(3)
+                
+//                    .tag(2)
+//              SettingView()
+//                   .tabItem{
+//                       Image(systemName: "gear")
+//                       Text("設定")
+//                   }
+//                   .tag(3)
+       
             }
             
         }
