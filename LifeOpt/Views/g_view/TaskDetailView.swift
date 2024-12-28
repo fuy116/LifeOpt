@@ -38,7 +38,7 @@ struct TaskDetailView: View {
                                             .foregroundColor(.blue)
                                             .font(.title2)
                                     }
-                                    .buttonStyle(BorderlessButtonStyle())  // 新增這行
+                                    .buttonStyle(BorderlessButtonStyle())
                                     
                                     Spacer()
                                     
@@ -62,7 +62,7 @@ struct TaskDetailView: View {
                                             .foregroundColor(.blue)
                                             .font(.title2)
                                     }
-                                    .buttonStyle(BorderlessButtonStyle())  // 新增這行
+                                    .buttonStyle(BorderlessButtonStyle())
                                 }
                                 .padding()
                                 .background(Color.gray.opacity(0.1))

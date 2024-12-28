@@ -32,12 +32,12 @@ struct ContentView: View {
                     }
                     .tag(2)
 
-                DailyReviewView()
-                    .tabItem{
-                        Image(systemName: "square.and.pencil")
-                        Text("每日反思")
-                    }.tag(3)
-                
+//                DailyReviewView()
+//                    .tabItem{
+//                        Image(systemName: "square.and.pencil")
+//                        Text("每日反思")
+//                    }.tag(3)
+//                
 //                    .tag(2)
 //              SettingView()
 //                   .tabItem{

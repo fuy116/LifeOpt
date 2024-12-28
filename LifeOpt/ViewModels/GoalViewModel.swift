@@ -4,11 +4,11 @@ import Combine
 class GoalVM: ObservableObject {
     // MARK: - Published Properties
     @Published var targets: [Target] = [
-        Target(name: "提升職場競爭力",
-             description: "透過學習新技能提升競爭力",
+        Target(name:"幻想成為帥哥",
+             description: "每天照鏡子，然後開始哭",
              color: "#007AFF"),
         Target(name: "保持健康生活",
-             description: "養成運動習慣",
+             description: "每天早上五點準時睡覺",
              color: "#34C759")
     ]
     
