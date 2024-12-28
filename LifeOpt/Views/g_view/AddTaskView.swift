@@ -46,23 +46,23 @@ struct AddTaskView: View {
                     .background(Color.white)
                     .cornerRadius(16)
                     
-                    // 權重設置
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("目標權重")
-                            .font(.headline)
-                        HStack {
-                            ForEach(1...5, id: \.self) { index in
-                                Image(systemName: index <= weight ? "star.fill" : "star")
-                                    .foregroundColor(index <= weight ? .yellow : .gray)
-                                    .onTapGesture {
-                                        weight = index
-                                    }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(16)
+//                    // 權重設置
+//                    VStack(alignment: .leading, spacing: 16) {
+//                        Text("目標權重")
+//                            .font(.headline)
+//                        HStack {
+//                            ForEach(1...5, id: \.self) { index in
+//                                Image(systemName: index <= weight ? "star.fill" : "star")
+//                                    .foregroundColor(index <= weight ? .yellow : .gray)
+//                                    .onTapGesture {
+//                                        weight = index
+//                                    }
+//                            }
+//                        }
+//                    }
+//                    .padding()
+//                    .background(Color.white)
+//                    .cornerRadius(16)
                     // 日期設置
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
@@ -91,8 +91,8 @@ struct AddTaskView: View {
                             .font(.headline)
                         Picker("任務類型", selection: $taskType) {
                             Text("每日").tag(TaskType.daily)
-                            Text("每週").tag(TaskType.weekly)
-                            Text("每月").tag(TaskType.monthly)
+//                            Text("每週").tag(TaskType.weekly)
+//                            Text("每月").tag(TaskType.monthly)
                             Text("自定義").tag(TaskType.custom)
                         }
                         .pickerStyle(SegmentedPickerStyle())
@@ -107,7 +107,7 @@ struct AddTaskView: View {
                             .font(.headline)
                         Picker("進度類型", selection: $progressType) {
                             Text("百分比").tag(ProgressType.percentage)
-                            Text("數值").tag(ProgressType.value)
+//                            Text("數值").tag(ProgressType.value)
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         

@@ -131,7 +131,6 @@ struct HomePageView: View {
         .cornerRadius(10)
     }
     
-    // Get Today's Tasks
     private func getTodayTasks() -> [Task] {
         let calendar = Calendar.current
         let today = Date()
@@ -139,6 +138,9 @@ struct HomePageView: View {
         return viewModel.targets.flatMap { target in
             target.subGoals.flatMap { subGoal in
                 subGoal.tasks.filter { task in
+                    // 排除 custom 類型的任務
+                    guard task.taskType != .custom else { return false }
+                    
                     let isInDateRange = task.startDate <= today && today <= task.endDate
                     
                     switch task.taskType {
@@ -149,13 +151,12 @@ struct HomePageView: View {
                     case .monthly:
                         return calendar.isDate(task.startDate, equalTo: today, toGranularity: .month)
                     case .custom:
-                        return isInDateRange
+                        return false  // 永遠不顯示 custom 任務
                     }
                 }
             }
         }
     }
-    
     struct TaskRow: View {
         let task: Task
         let viewModel: GoalVM

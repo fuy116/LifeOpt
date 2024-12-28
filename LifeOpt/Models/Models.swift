@@ -147,6 +147,7 @@ struct Task: Identifiable, Codable {
         Double(completedDates.count)
     }
     
+    
     init(id: UUID = UUID(),
          name: String,
          description: String = "",
@@ -170,6 +171,7 @@ struct Task: Identifiable, Codable {
         self.weight = weight
         self.subGoalId = subGoalId
     }
+    
 }
 
 
