@@ -1,11 +1,3 @@
-//
-//  Models.swift
-//  LiftOpt
-//
-//  Created by Sean Fu on 2024/12/9.
-//
-
-// Models.swift'
 import SwiftUI
 import Foundation
 struct OverviewItem: Identifiable {
@@ -41,20 +33,18 @@ struct Target: Identifiable, Codable {
     
  
     var totalProgress: Double {
-
-        if subGoals.isEmpty {
-                return 0
-            }
-          let totalWeight = subGoals.reduce(0) { $0 + $1.weight }
-          let weightedProgress = subGoals.reduce(0.0) { sum, subgoal in
-              // 每個子目標的權重佔比
-              let weightRatio = Double(subgoal.weight) / Double(totalWeight)
-              return sum + (subgoal.progress * weightRatio * 100)
-          }
-          
-          return weightedProgress / 100
+        guard !subGoals.isEmpty else { return 0 }
         
-      }
+        let totalWeight = subGoals.reduce(0) { $0 + $1.weight }
+        let weightedProgress = subGoals.reduce(0.0) { sum, subgoal in
+            let weightRatio = Double(subgoal.weight) / Double(totalWeight)
+           
+            return sum + (subgoal.progress * weightRatio)
+        }
+        
+        // 確保不會超過 100%
+        return min(weightedProgress, 100)
+    }
     
     init(id: UUID = UUID(),
          name: String,
@@ -89,12 +79,13 @@ struct SubGoal: Identifiable, Codable {
         
         let totalWeight = tasks.reduce(0) { $0 + $1.weight }
         let weightedProgress = tasks.reduce(0.0) { sum, task in
-            // 每個任務的權重佔比
             let weightRatio = Double(task.weight) / Double(totalWeight)
-            return sum + (task.progressPercentage * weightRatio * 100)
+
+            return sum + (task.progressPercentage * weightRatio)
         }
         
-        return weightedProgress / 100
+        // 確保不會超過 100%
+        return min(weightedProgress, 100)
     }
     
     init(id: UUID = UUID(),
@@ -110,7 +101,7 @@ struct SubGoal: Identifiable, Codable {
     }
 }
 
-// MARK: - 任務模型
+
 struct Task: Identifiable, Codable {
     let id: UUID
     var name: String
@@ -119,30 +110,42 @@ struct Task: Identifiable, Codable {
     var endDate: Date
     var taskType: TaskType
     var progressType: ProgressType
-    var currentValue: Double
+    var completedDates: Set<Date>
     var targetValue: Double
- 
-    var weight: Int // 權重 1-10
-    var subGoalId: UUID // 關聯到子目標
+    var weight: Int
+    var subGoalId: UUID
     
     var totalDays: Int {
-            let calendar = Calendar.current
-            return calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0 + 1
+        let calendar = Calendar.current
+        // 使用 startOfDay 來標準化日期
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
+        // 計算天數差異並加1（因為包含開始日期）
+        return calendar.dateComponents([.day], from: start, to: end).day! + 1
+    }
+    
+    // 計算進度百分比
+    var progressPercentage: Double {
+        switch (progressType, taskType) {
+        case (.percentage, .daily):
+            // 計算已完成的天數佔總天數的百分比
+            let completedCount = Double(completedDates.count)
+            let total = Double(totalDays)
+            return (completedCount / total) * 100
+            
+        case (.percentage, _):
+            // 其他類型的任務保持原有邏輯
+            return min(Double(completedDates.count), 100)
+            
+        case (.value, _):
+            // 數值型進度保持原有邏輯
+            return min((Double(completedDates.count) / targetValue) * 100, 100)
         }
-        
-        // 修改進度計算方式
-        var progressPercentage: Double {
-            switch (progressType, taskType) {
-            case (.percentage, .daily):
-                // 每日任務的進度計算
-                let dailyProgress = 100.0 / Double(totalDays)
-                return currentValue * dailyProgress
-            case (.percentage, _):
-                return currentValue
-            case (.value, _):
-                return (currentValue / targetValue) * 100
-            }
-        }
+    }
+    
+    var currentValue: Double {
+        Double(completedDates.count)
+    }
     
     init(id: UUID = UUID(),
          name: String,
@@ -151,7 +154,7 @@ struct Task: Identifiable, Codable {
          endDate: Date = Date().addingTimeInterval(7*24*60*60),
          taskType: TaskType = .daily,
          progressType: ProgressType = .percentage,
-         currentValue: Double = 0,
+         completedDates: Set<Date> = [],
          targetValue: Double = 100,
          weight: Int = 1,
          subGoalId: UUID) {
@@ -162,7 +165,7 @@ struct Task: Identifiable, Codable {
         self.endDate = endDate
         self.taskType = taskType
         self.progressType = progressType
-        self.currentValue = currentValue
+        self.completedDates = completedDates
         self.targetValue = targetValue
         self.weight = weight
         self.subGoalId = subGoalId

@@ -6,16 +6,15 @@ struct TaskDetailView: View {
     let task: Task
     let subGoalId: UUID
     
-    @State private var currentValue: Double
+    @State private var selectedDate: Date = Date()
     @State private var isEditing = false
-    @State private var weight: Int // 新增權重狀態
+    @State private var weight: Int
     
     init(viewModel: GoalVM, task: Task, subGoalId: UUID) {
         self.viewModel = viewModel
         self.task = task
         self.subGoalId = subGoalId
-        _currentValue = State(initialValue: task.currentValue)
-        _weight = State(initialValue: task.weight) // 初始化權重
+        _weight = State(initialValue: task.weight)
     }
     
     var body: some View {
@@ -23,18 +22,35 @@ struct TaskDetailView: View {
             Form {
                 Section(header: Text("任務進度")) {
                     if task.progressType == .value {
-                        VStack(alignment: .leading) {
-                            Text("當前進度: \(Int(currentValue))/\(Int(task.targetValue))")
-                            Slider(value: $currentValue,
-                                   in: 0...task.targetValue,
-                                   step: 1)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("當前進度: \(Int(task.currentValue))/\(Int(task.targetValue))")
+                            DatePicker("選擇日期", selection: $selectedDate, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                                .labelsHidden()
+                            
+                            Button(action: toggleDateCompletion) {
+                                HStack {
+                                    Image(systemName: isDateCompleted(selectedDate) ? "checkmark.circle.fill" : "circle")
+                                    Text(isDateCompleted(selectedDate) ? "取消完成" : "標記完成")
+                                }
+                                .foregroundColor(isDateCompleted(selectedDate) ? .green : .blue)
+                            }
                         }
                     } else {
-                        VStack(alignment: .leading) {
-                            Text("完成度: \(Int(currentValue))%")
-                            Slider(value: $currentValue,
-                                   in: 0...100,
-                                   step: 1)
+                        VStack(alignment: .leading, spacing: 10) {
+                            let percentage = (task.currentValue / Double(task.totalDays)) * 100
+                            Text("完成度: \(Int(percentage))%")
+                            DatePicker("選擇日期", selection: $selectedDate, displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                                .labelsHidden()
+                            
+                            Button(action: toggleDateCompletion) {
+                                HStack {
+                                    Image(systemName: isDateCompleted(selectedDate) ? "checkmark.circle.fill" : "circle")
+                                    Text(isDateCompleted(selectedDate) ? "取消完成" : "標記完成")
+                                }
+                                .foregroundColor(isDateCompleted(selectedDate) ? .green : .blue)
+                            }
                         }
                     }
                 }
@@ -45,8 +61,19 @@ struct TaskDetailView: View {
                             Image(systemName: index <= weight ? "star.fill" : "star")
                                 .foregroundColor(index <= weight ? .yellow : .gray)
                                 .onTapGesture {
-                                    weight = index
+                                    weight = index * 2  // 每顆星代表權重2
                                 }
+                        }
+                    }
+                }
+                
+                Section(header: Text("完成記錄")) {
+                    ForEach(Array(task.completedDates).sorted(by: >), id: \.self) { date in
+                        HStack {
+                            Text(date.formatted(date: .abbreviated, time: .omitted))
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
                         }
                     }
                 }
@@ -76,10 +103,37 @@ struct TaskDetailView: View {
         }
     }
     
+    private func isDateCompleted(_ date: Date) -> Bool {
+        // 標準化日期,只保留年月日
+        let calendar = Calendar.current
+        let standardizedDate = calendar.startOfDay(for: date)
+        return task.completedDates.contains(standardizedDate)
+    }
+    
+    private func toggleDateCompletion() {
+        if let subGoal = viewModel.targets
+            .flatMap({ $0.subGoals })
+            .first(where: { $0.id == subGoalId }),
+           let target = viewModel.targets
+            .first(where: { $0.subGoals.contains(where: { $0.id == subGoalId }) }) {
+            
+            var updatedTask = task
+            let calendar = Calendar.current
+            let standardizedDate = calendar.startOfDay(for: selectedDate)
+            
+            if isDateCompleted(standardizedDate) {
+                updatedTask.completedDates.remove(standardizedDate)
+            } else {
+                updatedTask.completedDates.insert(standardizedDate)
+            }
+            
+            viewModel.updateTask(updatedTask, in: subGoal, in: target)
+        }
+    }
+    
     private func saveChanges() {
         var updatedTask = task
-        updatedTask.currentValue = currentValue
-        updatedTask.weight = weight // 保存權重
+        updatedTask.weight = weight
         
         if let subGoal = viewModel.targets
             .flatMap({ $0.subGoals })
@@ -104,8 +158,8 @@ struct EditTaskView: View {
     @State private var endDate: Date
     @State private var taskType: TaskType
     @State private var weight: Int
-    @State private var targetValue: Double // 新增目標值
-    @State private var progressType: ProgressType // 新增進度類型
+    @State private var targetValue: Double
+    @State private var progressType: ProgressType
     
     init(viewModel: GoalVM, task: Task, subGoalId: UUID) {
         self.viewModel = viewModel
@@ -156,10 +210,10 @@ struct EditTaskView: View {
                 Section(header: Text("任務權重")) {
                     HStack {
                         ForEach(1...5, id: \.self) { index in
-                            Image(systemName: index <= weight ? "star.fill" : "star")
-                                .foregroundColor(index <= weight ? .yellow : .gray)
+                            Image(systemName: index <= (weight/2) ? "star.fill" : "star")
+                                .foregroundColor(index <= (weight/2) ? .yellow : .gray)
                                 .onTapGesture {
-                                    weight = index
+                                    weight = index * 2
                                 }
                         }
                     }
@@ -191,25 +245,7 @@ struct EditTaskView: View {
             .first(where: { $0.subGoals.contains(where: { $0.id == subGoalId }) }) {
             viewModel.updateTask(updatedTask, in: subGoal, in: target)
         }
-        //dismiss()
+        dismiss()
     }
 }
-#Preview {
-    let mockTask = Task(
-        name: "完成進度條功能",
-        description: "測試任務描述",
-        startDate: Date(),
-        endDate: Calendar.current.date(byAdding: .day, value: 7, to: Date())!,
-        taskType: .daily,
-        progressType: .value,
-        currentValue: 30,
-        targetValue: 100,
-        weight: 5,
-        subGoalId: UUID()
-    )
-    
-    let mockViewModel = GoalVM() // 確保 GoalVM 有無參數初始化方法
-    let mockSubGoalId = UUID()
-    
-    TaskDetailView(viewModel: mockViewModel, task: mockTask, subGoalId: mockSubGoalId)
-}
+

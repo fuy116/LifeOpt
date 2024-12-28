@@ -145,7 +145,6 @@ struct AddTaskView: View {
             endDate: endDate,
             taskType: taskType,
             progressType: progressType,
-            currentValue: 0,
             targetValue: targetValue,
             weight: weight,
             subGoalId: subGoalId

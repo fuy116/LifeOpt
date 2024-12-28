@@ -64,11 +64,11 @@ struct HomePageView: View {
                     .font(.headline)
                 Spacer()
                 
-                Button {
-                    print("open calender")
-                } label: {
-                    Image(systemName: "calendar")
-                }
+//                Button {
+//                    print("open calender")
+//                } label: {
+//                    Image(systemName: "calendar")
+//                }
             }
             
             HStack(spacing: 12) {
@@ -164,7 +164,9 @@ struct HomePageView: View {
         init(task: Task, viewModel: GoalVM) {
             self.task = task
             self.viewModel = viewModel
-            self._isCompleted = State(initialValue: task.progressPercentage >= 100)
+            // 檢查今天的日期是否在完成日期集合中
+            let today = Calendar.current.startOfDay(for: Date())
+            self._isCompleted = State(initialValue: task.completedDates.contains(today))
         }
         
         var body: some View {
@@ -172,7 +174,9 @@ struct HomePageView: View {
                 Button(action: {
                     isCompleted.toggle()
                     if task.taskType == .daily {
-                        viewModel.updateTaskProgress(task, isCompleted: isCompleted)
+                        // 使用今天的日期
+                        let today = Calendar.current.startOfDay(for: Date())
+                        viewModel.updateTaskProgress(task, date: today, isCompleted: isCompleted)
                     }
                 }) {
                     Circle()
@@ -207,7 +211,6 @@ struct HomePageView: View {
             .padding(.vertical, 8)
         }
     }
-    // Get Completed Tasks Count
     private func getTodayCompletedTasksCount() -> Int {
         return getTodayTasks().filter { $0.progressPercentage >= 100 }.count
     }

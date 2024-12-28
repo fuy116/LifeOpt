@@ -149,12 +149,22 @@ class GoalVM: ObservableObject {
                task.targetValue > 0
     }
     
-    func updateTaskProgress(_ task: Task, isCompleted: Bool) {
+    func updateTaskProgress(_ task: Task, date: Date, isCompleted: Bool) {
         for (targetIndex, target) in targets.enumerated() {
             for (subGoalIndex, subGoal) in target.subGoals.enumerated() {
                 if let taskIndex = subGoal.tasks.firstIndex(where: { $0.id == task.id }) {
                     var updatedTask = task
-                    updatedTask.currentValue = isCompleted ? updatedTask.targetValue : 0
+                    
+                    // 標準化日期，只保留年月日
+                    let calendar = Calendar.current
+                    let standardizedDate = calendar.startOfDay(for: date)
+                    
+                    // 根據完成狀態更新 completedDates
+                    if isCompleted {
+                        updatedTask.completedDates.insert(standardizedDate)
+                    } else {
+                        updatedTask.completedDates.remove(standardizedDate)
+                    }
                     
                     var updatedSubGoal = subGoal
                     updatedSubGoal.tasks[taskIndex] = updatedTask
