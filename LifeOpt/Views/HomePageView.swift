@@ -33,7 +33,7 @@ struct HomePageView: View {
         }
     }
     
-    // Overview Card
+
     private func overviewCard(item: OverviewItem) -> some View {
         HStack(spacing: 12) {
             Image(systemName: item.icon)
@@ -56,7 +56,7 @@ struct HomePageView: View {
         .cornerRadius(10)
     }
     
-    // Today Overview
+
     private func todayOverview() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -213,10 +213,14 @@ struct HomePageView: View {
         }
     }
     private func getTodayCompletedTasksCount() -> Int {
-        return getTodayTasks().filter { $0.progressPercentage >= 100 }.count
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        return getTodayTasks().filter { task in
+            // 檢查今天的日期是否在完成日期集合中
+            task.completedDates.contains(today)
+        }.count
     }
-    
-    // Weekly View
     private func weeklyView() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
