@@ -1,175 +1,33 @@
 import SwiftUI
+import Charts
 
 struct TimeTrackerView: View {
-    @State private var selectedTab: String = "天" // 預設選中 "天"
-    @State private var selectedType: String = "長條圖" // 預設選中 "長條圖"
-    @State private var selectedDate: Date = Date() // 選中的日期
-    @State private var showDatePicker: Bool = false // 控制日曆的 Sheet 彈出
+    @ObservedObject var viewModel: GoalVM
+    @State private var selectedTab: String = "天"
+    @State private var selectedType: String = "長條圖"
+    @State private var selectedDate: Date = Date()
+    @State private var showDatePicker: Bool = false
+    @State private var Target: Target? = nil
 
-    var body: some View
-    {
+    var body: some View {
         VStack {
-            // 按鈕切換區
             buttonGroup(options: ["天", "週", "月"], selected: $selectedTab)
-            
             buttonGroup(options: ["長條圖", "圓餅圖"], selected: $selectedType)
-            
-            // 日期調整與選擇按鈕
             dateSelectionView()
-            datapresent()
+            
+            if selectedType == "長條圖" {
+                BarChartView(targets: viewModel.targets)
+            } else {
+                PieChartView(targets: viewModel.targets)
+            }
+            
             Spacer()
         }
-        .frame(maxHeight: .infinity, alignment: .top) // 確保整體視圖對齊頂部
-        .background(Color.white.edgesIgnoringSafeArea(.all)) // 整體背景顏色
-            // 顯示選擇的日期
-        
-    }
-    private func datapresent() -> some View
-    {
-        return(
-            ZStack {
-            Color.gray.opacity(0.2) // 背景色
-                .cornerRadius(12)
-
-            Text("選中的日期: \(formattedDate())")
-                .font(.title2)
-                .padding()
-        }
-        .frame(width: 400, height: 500)
-        .shadow(radius: 5)
-        )
-        
-    }
-   
-    // 提取出來的日期選擇和顯示視圖
-    private func dateSelectionView() -> some View {
-        // 這裡用一個 `Group` 包裹多個視圖，以便在不同條件下返回不同的內容
-        Group {
-            if selectedTab == "天" {
-                // 顯示 "天" 相關的按鈕
-                AnyView(
-                    HStack {
-                        Button(action: {
-                            adjustDate(by: -1)
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-
-                        Button(action: {
-                            showDatePicker = true
-                        }) {
-                            HStack {
-                                Image(systemName: "calendar")
-                                Text("選擇日期")
-                                    .fontWeight(.bold)
-                            }
-                            .padding()
-                            .background(Color.blue.opacity(0.7))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                        }
-                        .sheet(isPresented: $showDatePicker) {
-                            VStack {
-                                DatePicker(
-                                    "選擇日期",
-                                    selection: $selectedDate,
-                                    displayedComponents: [.date]
-                                )
-                                .datePickerStyle(GraphicalDatePickerStyle())
-                                .padding()
-
-                                Button("完成") {
-                                    showDatePicker = false
-                                }
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                            }
-                            .padding()
-                        }
-
-                        Button(action: {
-                            adjustDate(by: 1)
-                        }) {
-                            Image(systemName: "chevron.right")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.all, 10)
-                )
-            } else if selectedTab == "週" {
-                // 顯示 "週" 相關的按鈕
-                AnyView(
-                    HStack {
-                        Button(action: {
-                            adjustDate(by: -1)
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                        
-                        Button(action: {
-                            adjustDate(by: 1)
-                        }) {
-                            Image(systemName: "chevron.right")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.all, 10)
-                )
-            } else if selectedTab == "月" {
-                // 顯示 "週" 相關的按鈕
-                AnyView(
-                    HStack {
-                        Button(action: {
-                            adjustDate(by: -1)
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                        
-                        Button(action: {
-                            adjustDate(by: 1)
-                        }) {
-                            Image(systemName: "chevron.right")
-                                .font(.title)
-                                .padding()
-                                .background(Color.blue.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.all, 10)
-                )
-            }else {
-                // 如果不是 "天" 或 "週"，返回空視圖
-                AnyView(EmptyView())
-            }
-        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(Color.white.edgesIgnoringSafeArea(.all))
     }
 
+    // MARK: - Button Group
     private func buttonGroup(options: [String], selected: Binding<String>) -> some View {
         HStack(spacing: 20) {
             ForEach(options, id: \.self) { option in
@@ -192,19 +50,240 @@ struct TimeTrackerView: View {
         .cornerRadius(12)
     }
 
-    private func formattedDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: selectedDate)
+    // MARK: - Date Selection View
+    private func dateSelectionView() -> some View {
+        Group {
+            if selectedTab == "天" {
+                HStack {
+                    // 左箭頭按鈕
+                    dateNavigationButton(systemName: "chevron.left") {
+                        adjustDate(by: -1)
+                    }
+                    
+                    // 日期選擇按鈕
+                    Button(action: { showDatePicker = true }) {
+                        HStack {
+                            Image(systemName: "calendar")
+                            Text("選擇日期")
+                                .fontWeight(.bold)
+                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.7))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                    .sheet(isPresented: $showDatePicker) {
+                        DatePickerView(selectedDate: $selectedDate, showDatePicker: $showDatePicker)
+                    }
+                    
+                    // 右箭頭按鈕
+                    dateNavigationButton(systemName: "chevron.right") {
+                        adjustDate(by: 1)
+                    }
+                }
+                .padding(.all, 10)
+            } else {
+                HStack {
+                    dateNavigationButton(systemName: "chevron.left") {
+                        adjustDate(by: -1)
+                    }
+                    dateNavigationButton(systemName: "chevron.right") {
+                        adjustDate(by: 1)
+                    }
+                }
+                .padding(.all, 10)
+            }
+        }
     }
-
-    private func adjustDate(by days: Int) {
-        if let newDate = Calendar.current.date(byAdding: .day, value: days, to: selectedDate) {
-            selectedDate = newDate
+    
+    // MARK: - Helper Views
+    private func dateNavigationButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.title)
+                .padding()
+                .background(Color.blue.opacity(0.7))
+                .foregroundColor(.white)
+                .cornerRadius(8)
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func adjustDate(by value: Int) {
+        if selectedTab == "天" {
+            selectedDate = Calendar.current.date(byAdding: .day, value: value, to: selectedDate) ?? selectedDate
+        } else if selectedTab == "週" {
+            selectedDate = Calendar.current.date(byAdding: .weekOfYear, value: value, to: selectedDate) ?? selectedDate
+        } else {
+            selectedDate = Calendar.current.date(byAdding: .month, value: value, to: selectedDate) ?? selectedDate
         }
     }
 }
 
+// MARK: - Bar Chart View
+struct BarChartView: View {
+    let targets: [Target]
+    
+    var body: some View {
+        VStack {
+            Chart {
+                ForEach(targets) { target in
+                    BarMark(
+                        x: .value("目標", target.name),
+                        y: .value("時間", target.accumulatedTime / 60.0) // 轉換為分鐘
+                    )
+                    .foregroundStyle(Color(hex: target.color))
+                }
+            }
+            .frame(height: 300)
+            .padding(.vertical)
+
+            TimeList(targets: targets)
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Pie Chart View
+struct PieChartView: View {
+    let targets: [Target]
+    
+    var body: some View {
+        VStack {
+            GeometryReader { geometry in
+                ZStack {
+                    ForEach(0..<targets.count, id: \.self) { index in
+                        PieSliceView(
+                            target: targets[index],
+                            index: index,
+                            totalTargets: targets
+                        )
+                    }
+                }
+                .frame(width: min(geometry.size.width, geometry.size.height),
+                       height: min(geometry.size.width, geometry.size.height))
+                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            }
+            .frame(height: 300)
+            
+            TimeList(targets: targets)
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Pie Slice View
+struct PieSliceView: View {
+    let target: Target
+    let index: Int
+    let totalTargets: [Target]
+    
+    private var total: Double {
+        totalTargets.reduce(0.0) { $0 + $1.accumulatedTime }
+    }
+    
+    private var startAngle: Double {
+        if index == 0 { return 0.0 }
+        return totalTargets[0..<index].reduce(0.0) { $0 + ($1.accumulatedTime / total) } * 360
+    }
+    
+    private var percentage: Double {
+        target.accumulatedTime / total
+    }
+    
+    var body: some View {
+        PieSlice(
+            startAngle: Angle(degrees: startAngle),
+            endAngle: Angle(degrees: startAngle + percentage * 360)
+        )
+        .fill(Color(hex: target.color))
+    }
+}
+
+// MARK: - Time List View
+struct TimeList: View {
+    let targets: [Target]
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                ForEach(targets) { target in
+                    HStack {
+                        Circle()
+                            .fill(Color(hex: target.color))
+                            .frame(width: 10, height: 10)
+                        Text(target.name)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Text(formatTime(seconds: target.accumulatedTime))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal)
+                }
+            }
+        }
+    }
+    
+    private func formatTime(seconds: TimeInterval) -> String {
+        let hours = Int(seconds) / 3600
+        let minutes = Int(seconds) / 60 % 60
+        return String(format: "%02d:%02d", hours, minutes)
+    }
+}
+
+// MARK: - Date Picker View
+struct DatePickerView: View {
+    @Binding var selectedDate: Date
+    @Binding var showDatePicker: Bool
+    
+    var body: some View {
+        VStack {
+            DatePicker(
+                "選擇日期",
+                selection: $selectedDate,
+                displayedComponents: [.date]
+            )
+            .datePickerStyle(GraphicalDatePickerStyle())
+            .padding()
+
+            Button("完成") {
+                showDatePicker = false
+            }
+            .padding()
+            .background(Color.blue.opacity(0.7))
+            .foregroundColor(.white)
+            .cornerRadius(10)
+        }
+        .padding()
+    }
+}
+
+// MARK: - Pie Slice Shape
+struct PieSlice: Shape {
+    var startAngle: Angle
+    var endAngle: Angle
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        
+        path.move(to: center)
+        path.addArc(center: center,
+                   radius: radius,
+                   startAngle: startAngle - .degrees(90),
+                   endAngle: endAngle - .degrees(90),
+                   clockwise: false)
+        path.closeSubpath()
+        
+        return path
+    }
+}
+
 #Preview {
-    TimeTrackerView()
+    TimeTrackerView(viewModel: GoalVM())
 }

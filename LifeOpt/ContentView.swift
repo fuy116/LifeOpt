@@ -18,14 +18,14 @@ struct ContentView: View {
                         Text("概覽")
                     }
                     .tag(0)
-                TimeTrackerView()
+                TimeTrackerView(viewModel: GoalVM())
                     .tabItem{
                         Image(systemName: "chart.bar")
                         Text("時間追蹤")
                     }
                     .tag(1)
                 
-                TimerView()
+                TimerView(viewModel: GoalVM())
                     .tabItem{
                         Image(systemName:"timer")
                         Text("計時器")

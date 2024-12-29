@@ -21,8 +21,23 @@ struct AchievementItem: Identifiable {
     let title: String
     let subtitle: String
 }
+struct TimerTag: Identifiable, Codable, Hashable, Equatable {
+    let id: UUID
+    var name: String
+    var accumulatedTime: TimeInterval = 0 // 累积时间，单位是秒
 
-struct Target: Identifiable, Codable {
+    mutating func addTime(_ seconds: TimeInterval) {
+        accumulatedTime += seconds
+    }
+
+    init(id: UUID = UUID(), name: String, accumulatedTime: TimeInterval = 0) {
+        self.id = id
+        self.name = name
+        self.accumulatedTime = accumulatedTime
+    }
+}
+
+struct Target: Identifiable, Codable , Hashable, Equatable{
     let id: UUID
     var name: String
     var description: String
@@ -30,6 +45,7 @@ struct Target: Identifiable, Codable {
     var endDate: Date
     var subGoals: [SubGoal]
     var color: String // 用hex 存
+    var accumulatedTime: TimeInterval = 0 // 新增的累积时间，单位是秒
     
  
     var totalProgress: Double {
@@ -45,6 +61,12 @@ struct Target: Identifiable, Codable {
         // 確保不會超過 100%
         return min(weightedProgress, 100)
     }
+    mutating func addTime(_ seconds: TimeInterval) {
+        accumulatedTime += seconds
+        print("Target \(name) updated: \(accumulatedTime) seconds")
+   
+    }
+    
     
     init(id: UUID = UUID(),
          name: String,
@@ -52,7 +74,9 @@ struct Target: Identifiable, Codable {
          startDate: Date = Date(),
          endDate: Date = Date().addingTimeInterval(7*24*60*60),
          subGoals: [SubGoal] = [],
-         color: String = "#007AFF") {
+         color: String = "#007AFF",
+         accumulatedTime: TimeInterval = 0) {
+        
         self.id = id
         self.name = name
         self.description = description
@@ -60,13 +84,14 @@ struct Target: Identifiable, Codable {
         self.endDate = endDate
         self.subGoals = subGoals
         self.color = color
+        self.accumulatedTime = accumulatedTime
     }
     
 }
 
 
 
-struct SubGoal: Identifiable, Codable {
+struct SubGoal: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     var name: String
     var weight: Int // 權重 1-10 每個星星佔2
@@ -102,7 +127,7 @@ struct SubGoal: Identifiable, Codable {
 }
 
 
-struct Task: Identifiable, Codable {
+struct Task: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     var name: String
     var description: String
